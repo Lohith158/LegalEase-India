@@ -1,0 +1,54 @@
+import os
+import requests
+from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_chroma import Chroma
+from langchain_ollama import OllamaLLM
+from langchain_google_genai import ChatGoogleGenerativeAI
+
+load_dotenv()
+provider = os.getenv("LLM_PROVIDER", "ollama")
+
+if provider == "gemini":
+    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash",  google_api_key=os.getenv("GEMINI_API_KEY"))
+else:
+    llm = OllamaLLM(model="llama3.2")
+    
+def load_documents() -> list:
+    all_documents = []
+    all_files = os.listdir("data/pdfs/")
+    files = [file for file in all_files if file.endswith(".pdf") ]
+    for f in files:
+        filepath = os.path.join("data/pdfs/", f)
+        document_loader = PyPDFLoader(filepath)
+        all_documents.extend(document_loader.load())
+    return all_documents
+
+def load_uploaded_documents(filepath: str) -> list:
+    document_loader = PyPDFLoader(filepath)
+    return document_loader.load()
+
+def load_url(url: str) -> str:
+    response = requests.get(url)
+    text = BeautifulSoup(response.text, "html.parser").get_text()
+    return text 
+
+def create_vectorstore(documents: list) -> Chroma:
+    splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+    chunks = splitter.split_documents(documents)
+    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    return Chroma.from_documents(chunks, embeddings, persist_directory="./chroma_db")
+
+def search(query: str, vectorstore: Chroma) -> list:
+    results = vectorstore.similarity_search(query)
+    return results
+
+def get_answer(query: str, vectorstore: Chroma) -> str:
+    results = search(query, vectorstore)
+    context = " ".join([doc.page_content for doc in results])
+    prompt = f"Answer only from the given context. If not in context say 'i dont have enough information'. \n\nContext: {context}\n\nQuestion: {query}"
+    output = llm.invoke(prompt)
+    return output.content if hasattr(output, "content") else output

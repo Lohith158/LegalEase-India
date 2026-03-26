@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+langchain
+requests
+beautifulsoup4
+pypdf
+chromadb
+sentence-transformers
+python-dotenv
+langchain-text-splitters
+langchain-huggingface
+langchain-chroma
+langchain-google-genai
+langchain-community
