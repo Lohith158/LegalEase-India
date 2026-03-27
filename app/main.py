@@ -7,22 +7,28 @@ from app import logger
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
 from langchain_core.documents import Document
+import threading
+
 
 vectorstore = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global vectorstore
-    try:
-        documents = rag.load_documents()
-        if not documents:
-            print("No documents found for initialization")
-        else:
-            vectorstore = rag.create_vectorstore(documents)
-        
-    except Exception as e:
-        vectorstore = None
-        print("Vectorstore initialization failed:", e)
+    def init_vectorstore():
+        global vectorstore
+        try:
+            documents = rag.load_documents()
+            if not documents:
+                print("No documents found for initialization")
+            else:
+                vectorstore = rag.create_vectorstore(documents)
+            
+        except Exception as e:
+            vectorstore = None
+            print("Vectorstore initialization failed:", e)
+
+    thread = threading.Thread(target=init_vectorstore)
+    thread.start()
     yield
 
 app = FastAPI(lifespan=lifespan)
