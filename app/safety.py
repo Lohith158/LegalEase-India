@@ -17,4 +17,4 @@ def is_safe(question: str) -> bool:
         return True
     if any(keyword in question for keyword in blocked_keywords):
         return False
-    return False
+    return True
