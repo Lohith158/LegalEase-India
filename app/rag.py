@@ -37,9 +37,9 @@ def load_url(url: str) -> str:
     return text 
 
 def create_vectorstore(documents: list) -> Chroma:
-    splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=100)
     chunks = splitter.split_documents(documents)
-    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    embeddings = HuggingFaceEmbeddings(model_name="paraphrase-MiniLM-L3-v2")
     return Chroma.from_documents(chunks, embeddings, persist_directory="./chroma_db")
 
 def search(query: str, vectorstore: Chroma) -> list:
