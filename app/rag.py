@@ -42,6 +42,10 @@ def create_vectorstore(documents: list) -> Chroma:
     embeddings = HuggingFaceEmbeddings(model_name="paraphrase-MiniLM-L3-v2")
     return Chroma.from_documents(chunks, embeddings, persist_directory="./chroma_db")
 
+def load_vectorstore() -> Chroma:
+    embeddings = HuggingFaceEmbeddings(model_name="paraphrase-MiniLM-L3-v2")
+    return Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
+
 def search(query: str, vectorstore: Chroma) -> list:
     results = vectorstore.similarity_search(query)
     return results
