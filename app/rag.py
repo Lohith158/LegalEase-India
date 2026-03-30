@@ -6,15 +6,15 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
-from langchain_ollama import OllamaLLM
-from langchain_google_genai import ChatGoogleGenerativeAI
 
 load_dotenv()
 provider = os.getenv("LLM_PROVIDER", "ollama")
 
 if provider == "gemini":
-    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash",  google_api_key=os.getenv("GEMINI_API_KEY"))
+    from langchain_google_genai import ChatGoogleGenerativeAI
+    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", google_api_key=os.getenv("GEMINI_API_KEY"))
 else:
+    from langchain_ollama import OllamaLLM
     llm = OllamaLLM(model="llama3.2")
     
 def load_documents() -> list:
