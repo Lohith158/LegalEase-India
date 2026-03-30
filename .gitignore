@@ -4,3 +4,4 @@ venv/
 *.pyc
 !data/pdfs/.gitkeep
 !data/urls/.gitkeep
+chroma_db/

@@ -17,7 +17,8 @@ async def lifespan(app: FastAPI):
     def init_vectorstore():
         global vectorstore
         try:
-            vectorstore = rag.load_vectorstore()
+            documents = rag.load_documents()
+            vectorstore = rag.create_vectorstore(documents)
             
         except Exception as e:
             vectorstore = None
