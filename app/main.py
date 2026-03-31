@@ -8,6 +8,8 @@ from pydantic import BaseModel
 from contextlib import asynccontextmanager
 from langchain_core.documents import Document
 import threading
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 
 vectorstore = None
@@ -29,6 +31,12 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan)
+
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+@app.get("/")
+def root():
+    return FileResponse("app/static/index.html")
 
 
 @app.get("/health")
