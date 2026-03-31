@@ -56,12 +56,12 @@ def asK(request: AskRequest):
     search_results = rag.search(request.question, vectorstore)
     if not search_results:
         return {"answer": "No relevant legal information found for your question."}
-    source = list(set([os.path.basename(result.metadata["source"]) for result in search_results]))
+    sources = list(set([os.path.basename(result.metadata["source"]) for result in search_results]))
     answer = rag.get_answer(request.question, vectorstore)
     if "enough information" in answer:
-        return {"answer": answer, "source": []}
-    logger.log_collection(request.question, answer, source)
-    return {"answer": answer, "source": source}
+        return {"answer": answer, "sources": []}
+    logger.log_collection(request.question, answer, sources)
+    return {"answer": answer, "sources": sources}
 
 @app.post("/upload")
 async def upload(file: UploadFile=File(...)):
