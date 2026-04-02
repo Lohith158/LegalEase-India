@@ -6,6 +6,7 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
+from langchain_core.messages import SystemMessage, HumanMessage
 
 load_dotenv()
 provider = os.getenv("LLM_PROVIDER", "ollama")
@@ -53,6 +54,8 @@ def search(query: str, vectorstore: Chroma) -> list:
 def get_answer(query: str, vectorstore: Chroma) -> str:
     results = search(query, vectorstore)
     context = " ".join([doc.page_content for doc in results])
-    prompt = f"Answer only from the given context. If not in context say 'i dont have enough information'. \n\nContext: {context}\n\nQuestion: {query}"
-    output = llm.invoke(prompt)
+    # prompt = f"Answer only from the given context. If not in context say 'i dont have enough information'. \n\nContext: {context}\n\nQuestion: {query}"
+    system = SystemMessage("You are a legal assistent, answer only form the given context")
+    user = HumanMessage(f"Context: {context}\n\nQuestion: {query}")
+    output = llm.invoke([system, user])
     return output.content if hasattr(output, "content") else output
